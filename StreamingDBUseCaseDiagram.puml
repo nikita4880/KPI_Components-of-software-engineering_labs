@@ -2,11 +2,7 @@
 left to right direction
 
 actor "Користувач" as User
-actor "Платіжна система" as PaymentSystem
 actor "Адміністратор" as Admin
-
-' успадкування акторів
-User <|-- Admin
 
 rectangle "StreamingDB System" {
   (Зареєструватися) as UC1
@@ -16,9 +12,16 @@ rectangle "StreamingDB System" {
   (Створити профіль) as UC5
   (Оплатити підписку) as UC6
   (Отримати рекомендації) as UC7
+
+  (Зареєструватися як адміністратор) as UC9
+  (Увійти як адміністратор) as UC10
+  (Керувати контентом) as UC11
   (Додати фільм у каталог) as UC8
+  (Редагувати інформацію про фільм) as UC12
+  (Видалити фільм із каталогу) as UC13
 }
 
+' Дії користувача
 User --> UC1
 User --> UC2
 User --> UC3
@@ -27,9 +30,21 @@ User --> UC5
 User --> UC6
 User --> UC7
 
-UC6 --> PaymentSystem : include
-Admin --> UC8
+UC6 .> UC3 : include
 
-UC3 .> UC4 : extend
-UC3 .> UC7 : include
+UC3 .> UC4 : include
+UC7 .> UC3 : use
+
+
+UC3 .> UC11: use
+
+' Дії адміністратора
+Admin --> UC9
+Admin --> UC10
+Admin --> UC11
+
+' Взаємозв'язки для керування контентом
+UC11 --> UC8 : include
+UC11 --> UC12 : include
+UC11 --> UC13 : include
 @enduml
