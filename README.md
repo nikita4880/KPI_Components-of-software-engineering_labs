@@ -9,7 +9,7 @@
 ## 1. Декларативна модель
 
 Файл: [use_case_diagram.puml](StreamingDBUseCaseDiagram.puml) 
-![use_case_diagram.png](StreamingDBUseCaseDiagram.png)
+![use_case_diagram.png](StreamingDBUseCaseDiagram.jpeg)
 
 ## 2. Функціональні вимоги
 
