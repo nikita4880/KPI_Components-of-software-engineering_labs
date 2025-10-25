@@ -5,9 +5,6 @@ actor "Користувач" as User
 actor "Платіжна система" as PaymentSystem
 actor "Адміністратор" as Admin
 
-' успадкування акторів
-User <|-- Admin
-
 rectangle "StreamingDB System" {
   (Зареєструватися) as UC1
   (Увійти в систему) as UC2
