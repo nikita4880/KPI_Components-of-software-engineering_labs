@@ -1,0 +1,30 @@
+@startuml
+actor User
+participant "StreamingDB System" as StreamingDB
+participant "PaymentService" as PaymentService
+participant "PaymentSystem" as PaymentSystem
+
+' Користувач обирає план
+User -> StreamingDB : selectSubscription(plan)
+
+' Система створює платіжний запит
+StreamingDB -> PaymentService : requestPayment(userId, plan, amount)
+
+' Платіжний сервіс ініціює платіж у зовнішній системі
+PaymentService -> PaymentSystem : initiatePayment(amount, paymentData)
+
+' Отримання результату
+PaymentSystem --> PaymentService : paymentStatus(SUCCESS/FAILED)
+
+' Повернення результату до StreamingDB
+PaymentService --> StreamingDB : paymentResult(status, transactionId)
+
+' Збереження статусу оплати
+alt payment success
+    StreamingDB -> StreamingDB : updateSubscriptionStatus(userId, "active")
+    StreamingDB --> User : showSuccessMessage("Підписка активована")
+else payment failed
+    StreamingDB -> StreamingDB : updateSubscriptionStatus(userId, "failed")
+    StreamingDB --> User : showErrorMessage("Оплата не вдалася")
+end
+@enduml
