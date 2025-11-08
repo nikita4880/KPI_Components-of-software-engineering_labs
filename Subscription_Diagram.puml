@@ -2,29 +2,35 @@
 actor User
 participant "StreamingDB System" as StreamingDB
 participant "PaymentService" as PaymentService
-participant "PaymentSystem" as PaymentSystem
+participant "PaymentSystem" as ExternalPayment
 
-' Користувач обирає план
 User -> StreamingDB : selectSubscription(plan)
+activate StreamingDB
 
-' Система створює платіжний запит
-StreamingDB -> PaymentService : requestPayment(userId, plan, amount)
+StreamingDB -> PaymentService : processPayment(userId, plan)
+activate PaymentService
 
-' Платіжний сервіс ініціює платіж у зовнішній системі
-PaymentService -> PaymentSystem : initiatePayment(amount, paymentData)
+PaymentService -> ExternalPayment : initiatePayment(amount, cardData)
+activate ExternalPayment
 
-' Отримання результату
-PaymentSystem --> PaymentService : paymentStatus(SUCCESS/FAILED)
+ExternalPayment --> PaymentService : paymentResult(SUCCESS or FAILED)
+deactivate ExternalPayment
 
-' Повернення результату до StreamingDB
-PaymentService --> StreamingDB : paymentResult(status, transactionId)
-
-' Збереження статусу оплати
 alt payment success
-    StreamingDB -> StreamingDB : updateSubscriptionStatus(userId, "active")
-    StreamingDB --> User : showSuccessMessage("Підписка активована")
+    PaymentService -> StreamingDB : updateSubscriptionStatus(userId, "active")
+    activate StreamingDB
+    StreamingDB --> PaymentService : OK
+    deactivate StreamingDB
+    PaymentService --> User : showSuccessMessage("Підписка активована")
 else payment failed
-    StreamingDB -> StreamingDB : updateSubscriptionStatus(userId, "failed")
-    StreamingDB --> User : showErrorMessage("Оплата не вдалася")
+    PaymentService -> StreamingDB : updateSubscriptionStatus(userId, "failed")
+    activate StreamingDB
+    StreamingDB --> PaymentService : OK
+    deactivate StreamingDB
+    PaymentService --> User : showErrorMessage("Оплата не вдалася")
 end
+
+deactivate PaymentService
+deactivate StreamingDB
 @enduml
+
