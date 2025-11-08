@@ -1,0 +1,27 @@
+@startuml
+actor User
+participant "StreamingDB System" as StreamingDB
+participant "EmailService" as EmailService
+participant "Database" as DB
+
+User -> StreamingDB : registerUser(name, email, password)
+activate StreamingDB
+
+StreamingDB -> DB : checkEmailExists(email)
+activate DB
+DB --> StreamingDB : exists = false
+deactivate DB
+
+StreamingDB -> DB : saveUser(name, email, hashedPassword)
+activate DB
+DB --> StreamingDB : success
+deactivate DB
+
+StreamingDB -> EmailService : sendVerificationEmail(email, token)
+activate EmailService
+EmailService --> User : "Лист із підтвердженням відправлено"
+deactivate EmailService
+
+StreamingDB --> User : showMessage("Реєстрація успішна. Перевірте пошту.")
+deactivate StreamingDB
+@enduml

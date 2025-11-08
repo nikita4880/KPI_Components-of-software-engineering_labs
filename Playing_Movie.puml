@@ -1,0 +1,33 @@
+@startuml
+actor User
+participant "StreamingDB System" as StreamingDB
+participant "VideoService" as VideoService
+participant "HistoryService" as HistoryService
+participant "RecommendationService" as RecoService
+
+User -> StreamingDB : selectMovie(movieId)
+activate StreamingDB
+
+StreamingDB -> VideoService : getMovieStream(movieId)
+activate VideoService
+VideoService --> StreamingDB : streamURL
+deactivate VideoService
+
+StreamingDB --> User : playVideo(streamURL)
+
+User -> StreamingDB : movieWatched(movieId)
+activate StreamingDB
+
+StreamingDB -> HistoryService : addToHistory(userId, movieId)
+activate HistoryService
+HistoryService --> StreamingDB : success
+deactivate HistoryService
+
+StreamingDB -> RecoService : updateRecommendations(userId)
+activate RecoService
+RecoService --> StreamingDB : success
+deactivate RecoService
+
+StreamingDB --> User : showMessage("Перегляд додано до історії")
+deactivate StreamingDB
+@enduml
