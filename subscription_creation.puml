@@ -1,0 +1,54 @@
+@startuml
+title Процес створення заявки (оформлення замовлення)
+
+|User|
+start
+:Відкрити сторінку створення заявки;
+:Ввести дані користувача (User);
+:Обрати тип підписки (Subscription.Type);
+
+if (Користувач має активний Subscription?) then (так)
+  :Показати вибір оновлення/продовження;
+else (ні)
+  :Створити нову заявку на підписку;
+endif
+
+|SubscriptionService|
+:Перевірити доступний план (Subscription);
+:Розрахувати вартість (Price);
+
+|User|
+:Підтвердити оформлення заявки;
+
+|BillingService|
+fork
+  :Створити транзакцію (Transaction);
+fork again
+  :Перевірити платіжні дані;
+  if (Платіж успішний?) then (так)
+      :Оновити Subscription.Status;
+  else (ні)
+      :Скасувати заявку;
+      stop
+  endif
+end fork
+
+|ProfileService|
+:Створити профіль користувача (Profile);
+if (Потрібен KidProfile?) then (так)
+    :Створити KidProfile;
+else (ні)
+    :Пропустити створення KidProfile;
+endif
+
+|MovieService|
+fork
+    :Створити початковий WatchHistory;
+fork again
+    :Завантажити рекомендовані MovieShow;
+end fork
+
+|User|
+:Підтвердження завершення оформлення;
+end
+@enduml

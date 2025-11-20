@@ -1,0 +1,45 @@
+@startuml
+title Процес реєстрації користувача
+
+|User|
+start
+:Відкрити сторінку реєстрації;
+:Ввести email, пароль та персональні дані;
+
+|User|
+if (Email вже використовується?) then (так)
+    :Показати помилку "Користувач існує";
+    stop
+else (ні)
+    :Продовжити реєстрацію;
+endif
+
+|ProfileService|
+:Створити запис User у БД;
+:Створити основний Profile;
+
+if (Створити дитячий профіль?) then (так)
+    :Створити KidProfile;
+else (ні)
+    :Пропустити створення KidProfile;
+endif
+
+|SubscriptionService|
+if (Умови сервісу передбачають стартовий план?) then (так)
+    :Створити безкоштовну стартову Subscription;
+else (ні)
+    :Пропустити створення Subscription;
+endif
+
+|ProfileService|
+fork
+    :Створити порожній WatchHistory;
+fork again
+    :Прив’язати профіль до User;
+end fork
+
+|User|
+:Підтвердження успішної реєстрації;
+end
+
+@enduml
