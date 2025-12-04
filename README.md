@@ -1,4 +1,4 @@
-# KPI_Components-of-software-engineering_labs
+# Component-diagram
 
 ![Component Diagram](Component_Diagram.jpeg)
 
