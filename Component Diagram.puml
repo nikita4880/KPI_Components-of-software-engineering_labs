@@ -1,0 +1,120 @@
+@startuml
+title StreamingDB — Component Diagram
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+rectangle "StreamingDB System" {
+
+  ' ===== UI Layer =====
+  component "Web/Mobile Client" as UI
+
+  ' ===== API Gateway =====
+  component "API Gateway" as APIGW {
+    interface "REST API" as RESTAPI
+  }
+  UI --> RESTAPI
+
+  ' ===== Auth Service =====
+  component "Auth Service" as Auth {
+    interface "AuthAPI" as AuthAPI
+    interface "IUserRepository" as IUserRepo
+    AuthAPI -down-|> Auth
+  }
+  RESTAPI --> AuthAPI
+
+  ' External OAuth Provider
+  component "OAuth Provider" as OAuth
+  Auth --> OAuth : required\nOAuth Interface
+
+  ' ===== Profile Service =====
+  component "Profile Service" as Profile {
+    interface "ProfileAPI" as ProfileAPI
+    interface "IProfileRepository" as IProfileRepo
+  }
+  RESTAPI --> ProfileAPI
+
+  ' ===== Movie Catalog Service =====
+  component "Movie Catalog Service" as Catalog {
+    interface "CatalogAPI" as CatalogAPI
+    interface "IMovieRepository" as IMovieRepo
+  }
+  RESTAPI --> CatalogAPI
+
+  ' ===== Recommendation Engine =====
+  component "Recommendation Engine" as RecEngine {
+    interface "RecommendationAPI" as RecAPI
+  }
+  RESTAPI --> RecAPI
+  RecEngine --> CatalogAPI : requires\nMovie Metadata
+
+  ' ===== Watch History Service =====
+  component "Watch History Service" as History {
+    interface "HistoryAPI" as HistoryAPI
+    interface "IHistoryRepository" as IHistoryRepo
+  }
+  RESTAPI --> HistoryAPI
+  History --> CatalogAPI : requires\nMovie Data
+
+  ' ===== Subscription & Billing Service =====
+  component "Subscription & Billing Service" as Billing {
+    interface "BillingAPI" as BillingAPI
+    interface "ISubRepository" as ISubRepo
+    interface "ITransactionRepository" as ITransRepo
+  }
+  RESTAPI --> BillingAPI
+
+  ' External Payment Provider
+  component "Payment Provider" as PayAPI
+  Billing --> PayAPI : required\nPaymentInterface
+
+  ' ===== Notification Service =====
+  component "Notification Service" as Notif {
+    interface "NotificationAPI" as NotifAPI
+  }
+  Billing --> NotifAPI : sends\nPayment Confirmations
+  RecEngine --> NotifAPI : sends\nRecommendation Emails
+
+  ' External Email/SMS gateway
+  component "Email/SMS Gateway" as SMS
+  Notif --> SMS : required\nEmail/SMS interface
+
+  ' ===== Admin Content Service =====
+  component "Admin Content Management" as Admin {
+    interface "AdminAPI" as AdminAPI
+    interface "IMovieRepository" as IMovieRepo2
+  }
+  RESTAPI --> AdminAPI
+
+  AdminAPI --> CatalogAPI : updates catalog
+
+  ' ===== Data Access Layer =====
+  component "Repository Layer" as RepoLayer {
+    [UserRepository]
+    [ProfileRepository]
+    [MovieRepository]
+    [WatchHistoryRepository]
+    [SubscriptionRepository]
+    [TransactionRepository]
+  }
+
+  IUserRepo -down-> UserRepository
+  IProfileRepo -down-> ProfileRepository
+  IMovieRepo -down-> MovieRepository
+  IHistoryRepo -down-> WatchHistoryRepository
+  ISubRepo -down-> SubscriptionRepository
+  ITransRepo -down-> TransactionRepository
+
+  ' ===== Database =====
+  database "StreamingDB Database" as DB
+
+  UserRepository --> DB
+  ProfileRepository --> DB
+  MovieRepository --> DB
+  WatchHistoryRepository --> DB
+  SubscriptionRepository --> DB
+  TransactionRepository --> DB
+
+}
+
+@enduml
